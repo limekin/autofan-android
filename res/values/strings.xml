@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">AutoFan</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="pref_file">app_store</string>
+    <string name="fanOn">On</string>
+    <string name="controllerIP">Controller IP</string>
+    <string name="connect">Connect</string>
+    <string name="sampleIp">Example: 10.0.2.2:3000</string>
+    <string name="connectingMessage">Connecting to the controller ...</string>
+    <string name="title_activity_home">HomeActivity</string>
+    <string name="fanControls">Fan Controls</string>
+    <string name="subTitle">Control your fan with just your phone.</string>
+    <string name="toggle">Toggle</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
+    <string name="fanState">Fan State</string>
+    <string name="speed">Speed</string>
+    <string name="one">1</string>
+    <string name="two">2</string>
+    <string name="three">3</string>
+    <string name="four">4</string>
+    <string name="five">5</string>
+    <string name="shift">Shift</string>
+    <string name="up">UP</string>
+    <string name="down">Down</string>
+
+</resources>
