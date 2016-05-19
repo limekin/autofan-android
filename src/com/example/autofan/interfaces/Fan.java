@@ -116,9 +116,7 @@ public class Fan {
 						Fan.this.afterStateChange();
 						return;
 					}
-					
-					
-					
+								
 				}
 			},
 			new Response.ErrorListener() {
@@ -142,7 +140,7 @@ public class Fan {
 			case "OFF":
 				this.context.fanTurnedOff(); break;
 			case "TOGGLE":
-				this.context.fanToggled();
+				this.context.fanToggled(this.state);
 				
 		}
 		

@@ -11,6 +11,9 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 public class HomeActivity extends AppCompatActivity {
@@ -67,6 +70,19 @@ public class HomeActivity extends AppCompatActivity {
 		stateText.setText(currentState);
 	}
 	
+	public void changeEnabled(boolean to) {
+		RadioGroup speeds  = (RadioGroup) this.findViewById(R.id.radioGroup1);
+		for(int i=0; i<speeds.getChildCount(); ++i) {
+			RadioButton speed = (RadioButton) speeds.getChildAt(i);
+			speed.setEnabled(to);
+		}
+		
+		Button up = (Button) this.findViewById(R.id.button4);
+		Button down = (Button) this.findViewById(R.id.button5);
+		up.setEnabled(to);
+		down.setEnabled(to);
+	}
+	
 	/**
 	 * ____________ Callbacks that will be called after performing actions. ______ 
 	 */
@@ -80,14 +96,28 @@ public class HomeActivity extends AppCompatActivity {
 		
 		// Now update the state.
 		this.updateState("On");
+		this.changeEnabled(true);
 		
 	}
 	
 	public void fanTurnedOff() {
+		View container = this.findViewById(R.id.container);
+		Snackbar snack = Snackbar.make(container,
+			"Fan turned off.", 
+			Snackbar.LENGTH_LONG
+		);
+		snack.show();
 		
+		// Now update the state.
+		this.updateState("Off");
+		this.changeEnabled(false);
 	}
 	
-	public void fanToggled() {
-		
+	public void fanToggled(int state) {
+		// Delegate to turn off or turn on.
+		if(state == 1) 
+			this.fanTurnedOn();
+		else if(state == 0) 
+			this.fanTurnedOff();	
 	}
 }

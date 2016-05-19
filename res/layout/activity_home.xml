@@ -112,24 +112,28 @@
             android1:layout_width="wrap_content"
             android1:layout_height="wrap_content"
             android1:checked="true"
+            android1:enabled="false"
             android1:text="@string/one" />
 
         <RadioButton
             android1:id="@+id/radio1"
             android1:layout_width="wrap_content"
             android1:layout_height="wrap_content"
+            android1:enabled="false"
             android1:text="@string/two" />
 
         <RadioButton
             android1:id="@+id/radio2"
             android1:layout_width="wrap_content"
             android1:layout_height="wrap_content"
+            android1:enabled="false"
             android1:text="@string/three" />
 
         <RadioButton
             android1:id="@+id/radioButton1"
             android1:layout_width="wrap_content"
             android1:layout_height="wrap_content"
+            android1:enabled="false"
             android1:text="@string/four"
             tools:ignore="HardcodedText" />
 
@@ -137,6 +141,7 @@
             android1:id="@+id/radioButton2"
             android1:layout_width="wrap_content"
             android1:layout_height="wrap_content"
+            android1:enabled="false"
             android1:text="@string/five" />
 
     </RadioGroup>
@@ -159,6 +164,7 @@
         android1:layout_alignLeft="@+id/textView4"
         android1:layout_below="@+id/textView4"
         android1:layout_marginTop="28dp"
+        android1:enabled="false"
         android1:text="@string/up" />
 
     <Button
@@ -169,6 +175,7 @@
         android1:layout_alignBaseline="@+id/button4"
         android1:layout_alignBottom="@+id/button4"
         android1:layout_toRightOf="@+id/textView3"
+        android1:enabled="false"
         android1:text="@string/down"
         tools:ignore="HardcodedText" />
 
