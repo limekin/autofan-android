@@ -29,13 +29,14 @@ public class Fan {
 	public Fan(HomeActivity context) {
 		this.context = context;
 		this.state = 0;
+		this.triedAction = "NONE";
 		
 		this.setState();
 		this.setControllerServer();
 	}
 	
 	// Sets the current state of the fan (got from connecting first).
-	public void setState() {
+	private void setState() {
 		String fetchedState = Store.get("state", context);
 		
 		// If state is empty, application could not connect to the controller.
@@ -46,15 +47,19 @@ public class Fan {
 		}
 		
 		this.state = Integer.parseInt(fetchedState);
+		this.afterStateChange();
 	}
 	
 	// Sets the state.
 	public void setState(int state) {
 		this.state = state;
+		
+		// DO anything we should after a state change.
+		this.afterStateChange();
 	}
 
 	// Sets the controller server we need to connect to.
-	public void setControllerServer() {
+	private void setControllerServer() {
 		String connectedServer = Store.get("saved_ip", this.context);
 		if(! Pattern.matches("^http://.*", connectedServer))
 			connectedServer = "http://" + connectedServer;
@@ -63,39 +68,60 @@ public class Fan {
 	}
 	
 	
-	/* ________________ Wrappers _____________ */
-	public void turnOn() {
-		this.changeState("ON");
+	/* ________________ Wrappers (Sugars ?) _____________ */
+	public void turnOn() throws JSONException {
+		JSONObject actionData = new JSONObject();
+		actionData.put("action", "ON");
+		this.sendAction(actionData);
 	}
 	
-	public void turnOff() {
-		this.changeState("OFF");
+	public void turnOff() throws JSONException {
+		JSONObject actionData = new JSONObject();
+		actionData.put("action", "OFF");
+		this.sendAction(actionData);
 	}
 	
-	public void toggle() {
-		this.changeState("TOGGLE");
+	public void toggle() throws JSONException {
+		JSONObject actionData = new JSONObject();
+		actionData.put("action", "TOGGLE");
+		this.sendAction(actionData);
+	}
+	
+	public void shiftSpeed(int state) throws JSONException {
+		JSONObject actionData = new JSONObject();
+		actionData.put("action", "SHIFT");
+		actionData.put("state", state);
+		this.sendAction(actionData);
+	}
+	
+	public void shiftUp() throws JSONException {
+		JSONObject actionData = new JSONObject();
+		actionData.put("action", "UP");
+		this.sendAction(actionData);
+	}
+	
+	public void shiftDown() throws JSONException {
+		JSONObject actionData = new JSONObject();
+		actionData.put("action", "DOWN");
+		this.sendAction(actionData);
 	}
 	/* ________________ Wrappers _____________ */
 	
 	
 	// Method that actually changes the state of the fan.
-	public void changeState(String action) {
+	private void sendAction(JSONObject actionData) {
 		
-		Fan.this.triedAction = action;
-		RequestQueue q = Volley.newRequestQueue(this.context);
-		
-		// Set the payload for the request.
-		JSONObject payload = new JSONObject();
 		try {
-			payload = new JSONObject("{action: \"" + action + "\"}");
-		} catch (JSONException e) {
-			e.printStackTrace();
+			Fan.this.triedAction = actionData.getString("action");
+		} catch (JSONException e1) {
+			e1.printStackTrace();
 		}
+		RequestQueue q = Volley.newRequestQueue(this.context);
 		
 		// Create the request.
 		JsonObjectRequest req = new JsonObjectRequest(
 			this.controllerServer + "/action",
-			payload,
+			actionData,
 			new Response.Listener<JSONObject>() {
 				@Override
 				public void onResponse(JSONObject data) {
@@ -110,11 +136,6 @@ public class Fan {
 						} catch (JSONException e) {
 							e.printStackTrace();
 						}
-						/**
-						 * Do things we should do after chaning the fan state successfully.
-						 */
-						Fan.this.afterStateChange();
-						return;
 					}
 								
 				}
@@ -131,16 +152,28 @@ public class Fan {
 	}
 	
 	// Handles any updates that should be done after changing the state of the fan.
-	public void afterStateChange() {
+	private void afterStateChange() {
 		
 		// It is safe to assume that the tried action has been performed right.
 		switch(this.triedAction) {
 			case "ON": 
-				this.context.fanTurnedOn(); break;
+				this.context.fanTurnedOn(this.state); break;
 			case "OFF":
 				this.context.fanTurnedOff(); break;
 			case "TOGGLE":
 				this.context.fanToggled(this.state);
+			case "SHIFT": 
+				// Nothing to do.
+				break;
+			case "UP":
+			case "DOWN":
+				this.context.fanSideShifted(this.state); break;
+			// We just fetched the current state of the fan.
+			case "NONE":
+				if(this.state > 0)
+					this.context.fanTurnedOn(this.state);
+				else
+					this.context.fanTurnedOff();
 				
 		}
 		

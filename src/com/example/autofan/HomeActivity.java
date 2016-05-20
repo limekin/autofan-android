@@ -4,6 +4,9 @@ package com.example.autofan;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+
+import org.json.JSONException;
 
 import com.example.autofan.interfaces.Fan;
 
@@ -25,6 +28,7 @@ public class HomeActivity extends AppCompatActivity {
 		setContentView(R.layout.activity_home);
 		Toolbar toolbar = (Toolbar) this.findViewById(R.id.my_toolbar);
 		setSupportActionBar(toolbar);
+		setTitle("AutoFan");
 		
 		// Initialize the fan.
 		this.connectedFan = new Fan(this);
@@ -49,27 +53,80 @@ public class HomeActivity extends AppCompatActivity {
 		return super.onOptionsItemSelected(item);
 	}
 	
-	public void turnOnFan(View view) {
-		this.connectedFan.turnOn();
+	// Handles the click event for speed shifts.
+	public void performSpeedShift(View view) {
+		String toState = (String) view.getTag();
+		try {
+			this.connectedFan.shiftSpeed(Integer.parseInt(toState));
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 	}
 	
-	public void turnOffFan(View view) {
-		this.connectedFan.turnOff();
-	}
-	public void toggleFan(View view) {
-		this.connectedFan.toggle();
+	// Handles the click event for UP and DOWN buttons.
+	public void performAdjacentShift(View view) {
+		try {
+			switch(view.getId()) {
+				case R.id.button4:
+					this.connectedFan.shiftUp(); break;
+				case R.id.button5:
+					this.connectedFan.shiftDown();
+			}
+		}
+		catch (JSONException e) {
+			e.printStackTrace();
+		}
 	}
 	
+	// Handles the click event for ON, OFF and TOGGLE buttons.
+	public void performStateChange(View buttonView) {
+		try {
+			switch(buttonView.getId()) { 
+				case R.id.button1:	
+					this.connectedFan.toggle(); break;
+				case R.id.button2:
+					this.connectedFan.turnOn(); break;
+				case R.id.button3:
+					this.connectedFan.turnOff();
+			}
+		}
+		catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
 	
+	// Shows a Snackbar message.
 	public void showSnack(String message) {
-		// Hmm.
+		View container = this.findViewById(R.id.container);
+		Snackbar snack = Snackbar.make(
+			container,
+			message, 
+			Snackbar.LENGTH_LONG
+		);
+		snack.show();
 	}
 	
-	public void updateState(String currentState) {
+	// Changes the status (state ?) of the fan shown on the UI.
+	public void updateStateOnView(String currentState) {
 		TextView stateText = (TextView) this.findViewById(R.id.current_state);
 		stateText.setText(currentState);
 	}
 	
+	// Changes the speed to the current speed.
+	public void updateSpeedOnView(int state) {
+		RadioGroup speeds  = (RadioGroup) this.findViewById(R.id.radioGroup1);
+		for(int i=0; i<speeds.getChildCount(); ++i) {
+			RadioButton speed = (RadioButton) speeds.getChildAt(i);
+			if(state == i+1) {
+				speed.setChecked(true);
+				return;
+			}
+		}
+	}
+	
+	// Changes enabled value of all fan controls except ON, OFF and TOGGLE.
 	public void changeEnabled(boolean to) {
 		RadioGroup speeds  = (RadioGroup) this.findViewById(R.id.radioGroup1);
 		for(int i=0; i<speeds.getChildCount(); ++i) {
@@ -86,38 +143,36 @@ public class HomeActivity extends AppCompatActivity {
 	/**
 	 * ____________ Callbacks that will be called after performing actions. ______ 
 	 */
-	public void fanTurnedOn() {
-		View container = this.findViewById(R.id.container);
-		Snackbar snack = Snackbar.make(container,
-			"Fan turned on.", 
-			Snackbar.LENGTH_LONG
-		);
-		snack.show();
+	public void fanTurnedOn(int state) {
+		this.showSnack("Fan turned on.");
 		
 		// Now update the state.
-		this.updateState("On");
+		this.updateStateOnView("On");
+		// Also update the speed.
+		this.updateSpeedOnView(state);
+		// Make other controls enabled.
 		this.changeEnabled(true);
 		
 	}
 	
 	public void fanTurnedOff() {
-		View container = this.findViewById(R.id.container);
-		Snackbar snack = Snackbar.make(container,
-			"Fan turned off.", 
-			Snackbar.LENGTH_LONG
-		);
-		snack.show();
+		this.showSnack("Fan turned off.");
 		
 		// Now update the state.
-		this.updateState("Off");
+		this.updateStateOnView("Off");
+		// Make other controls disabled.
 		this.changeEnabled(false);
 	}
 	
 	public void fanToggled(int state) {
 		// Delegate to turn off or turn on.
-		if(state == 1) 
-			this.fanTurnedOn();
-		else if(state == 0) 
+		if(state > 0) 
+			this.fanTurnedOn(state);
+		else 
 			this.fanTurnedOff();	
+	}
+	
+	public void fanSideShifted(int toState) {
+		this.updateSpeedOnView(toState);
 	}
 }

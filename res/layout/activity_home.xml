@@ -29,7 +29,7 @@
         android:layout_toLeftOf="@+id/button3"
         android:layout_toRightOf="@+id/button1"
         android:text="@string/on"
-        android1:onClick="turnOnFan"
+        android1:onClick="performStateChange"
         tools:ignore="RtlHardcoded" />
 
     <Button
@@ -40,7 +40,7 @@
         android:layout_alignBottom="@+id/button2"
         android:layout_alignParentRight="true"
         android:text="@string/off"
-        android1:onClick="turnOffFan"
+        android1:onClick="performStateChange"
         tools:ignore="RtlHardcoded" />
 
     <Button
@@ -51,7 +51,7 @@
         android:layout_below="@+id/my_toolbar"
         android:layout_marginTop="70dp"
         android:text="@string/toggle"
-        android1:onClick="toggleFan"
+        android1:onClick="performStateChange"
         tools:ignore="RtlHardcoded" />
 
     <RelativeLayout
@@ -59,7 +59,7 @@
         android:layout_height="50dp"
         android:layout_alignParentLeft="true"
         android:layout_below="@+id/my_toolbar"
-        android:background="#226CE3"
+        android:background="#454545"
         tools:ignore="RtlHardcoded" >
 
         <TextView
@@ -105,7 +105,8 @@
         android1:layout_height="wrap_content"
         android1:layout_alignLeft="@+id/textView3"
         android1:layout_centerVertical="true"
-        android1:orientation="horizontal" >
+        android1:orientation="horizontal"
+        tools:ignore="RtlHardcoded" >
 
         <RadioButton
             android1:id="@+id/radio0"
@@ -113,6 +114,8 @@
             android1:layout_height="wrap_content"
             android1:checked="true"
             android1:enabled="false"
+            android1:onClick="performSpeedShift"
+            android1:tag="1"
             android1:text="@string/one" />
 
         <RadioButton
@@ -120,6 +123,8 @@
             android1:layout_width="wrap_content"
             android1:layout_height="wrap_content"
             android1:enabled="false"
+            android1:onClick="performSpeedShift"
+            android1:tag="2"
             android1:text="@string/two" />
 
         <RadioButton
@@ -127,6 +132,8 @@
             android1:layout_width="wrap_content"
             android1:layout_height="wrap_content"
             android1:enabled="false"
+            android1:onClick="performSpeedShift"
+            android1:tag="3"
             android1:text="@string/three" />
 
         <RadioButton
@@ -134,6 +141,8 @@
             android1:layout_width="wrap_content"
             android1:layout_height="wrap_content"
             android1:enabled="false"
+            android1:onClick="performSpeedShift"
+            android1:tag="4"
             android1:text="@string/four"
             tools:ignore="HardcodedText" />
 
@@ -142,7 +151,10 @@
             android1:layout_width="wrap_content"
             android1:layout_height="wrap_content"
             android1:enabled="false"
-            android1:text="@string/five" />
+            android1:onClick="performSpeedShift"
+            android1:tag="5"
+            android1:text="@string/five"
+            tools:ignore="HardcodedText" />
 
     </RadioGroup>
 
@@ -165,6 +177,7 @@
         android1:layout_below="@+id/textView4"
         android1:layout_marginTop="28dp"
         android1:enabled="false"
+        android1:onClick="performAdjacentShift"
         android1:text="@string/up" />
 
     <Button
@@ -176,6 +189,7 @@
         android1:layout_alignBottom="@+id/button4"
         android1:layout_toRightOf="@+id/textView3"
         android1:enabled="false"
+        android1:onClick="performAdjacentShift"
         android1:text="@string/down"
         tools:ignore="HardcodedText" />
 
