@@ -17,20 +17,23 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.autofan.dialogs.ConnectDialog;
+import com.example.autofan.dialogs.SearchDialog;
 import com.example.autofan.storage.Store;
+import com.example.autofan.tasks.BroadcastTask;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 
 public class MainActivity extends AppCompatActivity {
 
-	private ConnectDialog connectDialog;
+	private SearchDialog searchDialog;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -39,9 +42,8 @@ public class MainActivity extends AppCompatActivity {
 		Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
 	    setSupportActionBar(myToolbar);
 	    
-	    // Check if the controller IP is configured.
-	    //checkIPSet();
-	    setIP();
+	    // Initialize the search dialog here.
+	    this.searchDialog = new SearchDialog();
 	}
 
 	@Override
@@ -63,71 +65,59 @@ public class MainActivity extends AppCompatActivity {
 		return super.onOptionsItemSelected(item);
 	}
 	
-	public void ensureIPSet() {
-		String IP = Store.get("IP", this);
-		if(IP.equals("empty")) {
-			
-		}
+	// Starts searching for the fan controller.
+	public void startSearch(View view) {
+		// Start broadcasting.
+	    new BroadcastTask(this).execute();
+	    
+	    // Also show the search dialog.
+	    searchDialog.show( this.getSupportFragmentManager(), "BURRP");
 	}
 	
-	public void saveIP() {
-		TextView ipText = (TextView) this.findViewById(R.id.editText1);
-		Store.put("saved_ip", ipText.getText().toString(), this);
+	// Shows a Snackbar message.
+	public void showSnack(String message) {
+		View container = this.findViewById(R.id.container);
+		Snackbar snack = Snackbar.make(
+			container,
+			message, 
+			Snackbar.LENGTH_LONG
+		);
+		snack.show();
 	}
-	
-	public void setIP() {
-		String savedIp = Store.get("saved_ip", this);
-		if(savedIp == "empty") return;
+
+	// Callback that will be called after completing broadcast task.
+	public void broadcastCallback(boolean found) {
+		// Enough with dialog toss it off !
+		this.searchDialog.dismiss();
 		
-		TextView ipText = (TextView) this.findViewById(R.id.editText1);
-		ipText.setText(savedIp);
-	}
-	
-	public String getHost() {
-		TextView ipText = (TextView) this.findViewById(R.id.editText1);
-		String host = ipText.getText().toString();
-		
-		if(Pattern.matches("^http://.*", host)) return host;
-		
-		return "http://" + host;
-	}
-	
-	public boolean enteredIP() {
-		TextView ipText = (TextView) this.findViewById(R.id.editText1);
-		if(ipText.getText().toString().isEmpty()) return false;
-		
-		return true;
-	}
-	
-	/* Event handlers for view component. */
-	public void connect(View view) {
-		
-		if(! enteredIP()) {
-			View container = MainActivity.this.findViewById(R.id.container);
-			Snackbar snack = Snackbar.make(container,
-				"Enter the host IP to connect to.", 
-				Snackbar.LENGTH_LONG
-			);
-			snack.show();
+		// Check for the search status.
+		if(found == true) {
+			this.showSnack("Found a controller ! Connecting ...");
+			this.connect();
 			return;
 		}
-		//connectDialog = new ConnectDialog();
-		//connectDialog.show(this.getSupportFragmentManager(), "connect_message");
-		// Test server.
+		
+		this.showSnack("Sorry, could not find a controller on the network.");
+	}
+	
+	// Returns the controller's address we got frombroadcasting.
+	public String getHost() {
+		return Store.get("saved_ip", this);
+	}
+	
+	// Simply tries to fetch the state from the found controller server.
+	public void connect () {
+		// Prepp the request.
 		RequestQueue q = Volley.newRequestQueue(this);
 		String url = this.getHost() + "/state";
-		
-		//new JsonObjectRequest();
 		JsonObjectRequest jsonReq = new JsonObjectRequest(
 			Request.Method.GET, url, new Response.Listener<JSONObject>() {
-
 				@Override
 				public void onResponse(JSONObject data) {
 					String message = "";
 					
 					if(data.has("state")) {
 						message = "Connected to controller.";
-						MainActivity.this.saveIP();
 						try {
 							Store.put("state", data.getString("state"), MainActivity.this);
 						} catch (JSONException e) {
@@ -138,31 +128,23 @@ public class MainActivity extends AppCompatActivity {
 					} else
 						message = "Got an unexpected response from controller.";
 					
-					View container = MainActivity.this.findViewById(R.id.container);
-					Snackbar snack = Snackbar.make(container,
-						message, 
-						Snackbar.LENGTH_LONG
-					);
-					snack.show();
+					MainActivity.this.showSnack(message);
 				}
 			},
 			new Response.ErrorListener() {
-
 				@Override
 				public void onErrorResponse(VolleyError error) {
 					String errorMessage = error.getMessage();
 					if(errorMessage == null)
 						errorMessage = "Could not connect to the server. Make sure that the host address is correct.";
 					
-					View container = MainActivity.this.findViewById(R.id.container);
-					Snackbar snack = Snackbar.make(container, errorMessage, Snackbar.LENGTH_LONG );
-					snack.show();
-					
+					MainActivity.this.showSnack(errorMessage);
 				}
 			}
 		);
-		q.add(jsonReq);	
 		
+		// Add request to request queue so that it sends it when can.
+		q.add(jsonReq);	
 	}
 	
 }

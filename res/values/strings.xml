@@ -10,7 +10,7 @@
     <string name="controllerIP">Controller IP</string>
     <string name="connect">Connect</string>
     <string name="sampleIp">Example: 10.0.2.2:3000</string>
-    <string name="connectingMessage">Connecting to the controller ...</string>
+    <string name="connectingMessage">Searching for the controller ...</string>
     <string name="title_activity_home">HomeActivity</string>
     <string name="fanControls">Fan Controls</string>
     <string name="subTitle">Control your fan with just your phone.</string>
@@ -27,5 +27,8 @@
     <string name="shift">Shift</string>
     <string name="up">UP</string>
     <string name="down">Down</string>
+    <string name="discoveringController">Discovering fan controller ...</string>
+    <string name="search">Search</string>
+    <string name="findController">Find a controller</string>
 
 </resources>
