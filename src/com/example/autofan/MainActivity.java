@@ -44,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
 	    
 	    // Initialize the search dialog here.
 	    this.searchDialog = new SearchDialog();
+	    // Lets start the search.
+	    this.startSearch(new View(this));
 	}
 
 	@Override
