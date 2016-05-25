@@ -6,6 +6,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.json.JSONException;
@@ -26,7 +28,10 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Adapter;
+import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -34,6 +39,10 @@ import android.widget.TextView;
 public class MainActivity extends AppCompatActivity {
 
 	private SearchDialog searchDialog;
+	private FansAdapter fansAdapter;
+	private ArrayList<Map<String, String>> fans;
+	private ListView viewFans;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -42,6 +51,14 @@ public class MainActivity extends AppCompatActivity {
 		Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
 	    setSupportActionBar(myToolbar);
 	    
+	    // Fan list initializations.
+	    this.fans = new ArrayList< Map<String, String>>();
+	    this.fansAdapter = new FansAdapter(this, fans);
+	    this.viewFans = (ListView) this.findViewById(R.id.fanList);
+	    this.viewFans.setAdapter(fansAdapter);
+	    
+	    // Add list item (fan) click listeners.
+	    this.addListClickListener();
 	    // Initialize the search dialog here.
 	    this.searchDialog = new SearchDialog();
 	    // Lets start the search.
@@ -67,6 +84,23 @@ public class MainActivity extends AppCompatActivity {
 		return super.onOptionsItemSelected(item);
 	}
 	
+	// Sets a listener for handling click on a single fan controller.
+	public void addListClickListener() {
+		this.viewFans.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				Map<String, String> selectedFan = (Map<String, String>) 
+						parent.getItemAtPosition(position);
+				String controllerAddress = "http://" + 
+						selectedFan.get("address") + ":" + 
+						selectedFan.get("port");
+				Store.put("saved_ip", controllerAddress, MainActivity.this);
+				
+				Intent homeIntent = new Intent(MainActivity.this, HomeActivity.class);
+				MainActivity.this.startActivity(homeIntent);			}
+		});
+	}
+	
 	// Starts searching for the fan controller.
 	public void startSearch(View view) {
 		// Start broadcasting.
@@ -88,18 +122,21 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	// Callback that will be called after completing broadcast task.
-	public void broadcastCallback(boolean found) {
+	public void broadcastCallback(ArrayList<Map<String, String>> controllers) {
 		// Enough with dialog toss it off !
 		this.searchDialog.dismiss();
 		
-		// Check for the search status.
-		if(found == true) {
-			this.showSnack("Found a controller ! Connecting ...");
-			this.connect();
-			return;
+		// Clear the current list.
+		this.fans.clear();
+		for(int i=0; i<controllers.size(); ++i) 
+			this.fans.add(controllers.get(i));
+		
+		if(controllers.isEmpty()) {
+			this.showSnack("No fans found on the network.");
 		}
 		
-		this.showSnack("Sorry, could not find a controller on the network.");
+		// Tell the adapter that fan list have been changed.
+		this.fansAdapter.notifyDataSetChanged();
 	}
 	
 	// Returns the controller's address we got frombroadcasting.

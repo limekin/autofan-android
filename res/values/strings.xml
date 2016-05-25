@@ -30,5 +30,10 @@
     <string name="discoveringController">Discovering fan controller ...</string>
     <string name="search">Search</string>
     <string name="findController">Find a controller</string>
+    <string name="notSet">Not set</string>
+    <string name="ip">IP</string>
+    <string name="port">Port</string>
+    <string name="availableFanControllers">Available fan controllers</string>
+    <string name="searchingControllers">Searching for controllers ...</string>
 
 </resources>

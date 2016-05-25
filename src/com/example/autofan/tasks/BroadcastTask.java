@@ -7,10 +7,12 @@ import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 import com.example.autofan.MainActivity;
 import com.example.autofan.Settings;
@@ -23,35 +25,37 @@ import android.util.Log;
 
 
 // Used to broadcast upd messges to the hosts in the network.
-public class BroadcastTask extends AsyncTask<String, Map<String, String>, Map<String, String>> {
+public class BroadcastTask extends AsyncTask<
+	String, 
+	ArrayList<Map<String, String>>, 
+	ArrayList<Map<String, String>>> {
 
 	private Context context;
+	private ArrayList<Map<String, String>> foundFans; 
 	public BroadcastTask(Context context) {
 		this.context = context;
+		this.foundFans = new ArrayList<Map<String, String>>();	
 	}
+	
 	@Override
-	protected Map<String, String> doInBackground(String... params) {
+	protected ArrayList<Map<String, String>> doInBackground(String... params) {
 		try {
 			return broadcast();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return null;
+		return this.foundFans;
 	}
 	
 	@Override
-	protected void onPostExecute(Map<String, String>  controller) {
-		if(controller != null) {
-			String controllerAddress = 
-					"http://" + controller.get("address") + ":" + controller.get("port");
-			Store.put("saved_ip", controllerAddress, this.context);
-		}
-		
-		((MainActivity) this.context).broadcastCallback( controller != null);
+	protected void onPostExecute(ArrayList<Map<String, String>>  controllers) {
+		((MainActivity) this.context).broadcastCallback( controllers);
 	}
 	
 	// Broadcasts UDP packets to all the hosts in every network interface.
-	private Map<String, String> broadcast() throws IOException {
+	private ArrayList<Map<String, String>> broadcast() throws IOException {
+		// Wll contain all the found fans.
+		ArrayList<Map<String, String>> foundFans = new ArrayList<Map<String, String>>();
 		
 		// Get all the network interfaces of the system.
 		Enumeration< NetworkInterface > interfaces = 
@@ -78,17 +82,22 @@ public class BroadcastTask extends AsyncTask<String, Map<String, String>, Map<St
 						"UDP", 
 						"Found broadcast address: " + broadcastAddress.getHostName()
 					);
-					Map<String, String> controller =  
+					try {
+						Map<String, String> controller =  
 							sendUDP(broadcastAddress);
 					
-					// If we got a valid controller then we found a controller.d
-					if(controller != null) 
-						return controller;
+						// If we got a valid controller then we found a controller,
+						// then add it to the found fans list.
+						if(controller != null) 
+							foundFans.add(controller);
+					} catch(SocketTimeoutException e) {
+						// Catched.
+					}
 				}
 			}
 		}
 		
-		return null;
+		return foundFans;
 	}
 	
 	// Sends the udp packet to the given host for controller detection.

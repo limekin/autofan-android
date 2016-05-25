@@ -75,7 +75,7 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/textView1"
+            android:id="@+id/controlllerAddress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
@@ -159,7 +159,7 @@
     </RadioGroup>
 
     <TextView
-        android1:id="@+id/textView4"
+        android1:id="@+id/controllerPort"
         android1:layout_width="wrap_content"
         android1:layout_height="wrap_content"
         android1:layout_alignLeft="@+id/radioGroup1"
@@ -173,8 +173,8 @@
         style="?android:attr/buttonStyleSmall"
         android1:layout_width="wrap_content"
         android1:layout_height="wrap_content"
-        android1:layout_alignLeft="@+id/textView4"
-        android1:layout_below="@+id/textView4"
+        android1:layout_alignLeft="@+id/controllerPort"
+        android1:layout_below="@+id/controllerPort"
         android1:layout_marginTop="28dp"
         android1:enabled="false"
         android1:onClick="performAdjacentShift"
