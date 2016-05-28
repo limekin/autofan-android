@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
 	private SearchDialog searchDialog;
 	private FansAdapter fansAdapter;
-	private ArrayList<Map<String, String>> fans;
+	private ArrayList<JSONObject> fans;
 	private ListView viewFans;
 	
 	@Override
@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
 	    setSupportActionBar(myToolbar);
 	    
 	    // Fan list initializations.
-	    this.fans = new ArrayList< Map<String, String>>();
+	    this.fans = new ArrayList<JSONObject>();
 	    this.fansAdapter = new FansAdapter(this, fans);
 	    this.viewFans = (ListView) this.findViewById(R.id.fanList);
 	    this.viewFans.setAdapter(fansAdapter);
@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	// Callback that will be called after completing broadcast task.
-	public void broadcastCallback(ArrayList<Map<String, String>> controllers) {
+	public void broadcastCallback(ArrayList<JSONObject> controllers) {
 		// Enough with dialog toss it off !
 		this.searchDialog.dismiss();
 		

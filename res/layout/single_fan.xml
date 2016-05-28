@@ -4,39 +4,52 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <TextView
-        android:id="@+id/controllerIP"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="15dp"
-        android:layout_marginTop="14dp"
-        android:text="@string/notSet"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textSize="13sp"
-        tools:ignore="RtlHardcoded,HardcodedText" />
-
-    <TextView
-        android:id="@+id/controllerPort"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/controllerIP"
-        android:layout_alignBottom="@+id/controllerIP"
-        android:layout_marginLeft="20dp"
-        android:layout_toRightOf="@+id/controllerIP"
-        android:text="@string/notSet"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textSize="13sp" />
-
     <Button
         android:id="@+id/button1"
         style="?android:attr/buttonStyleSmall"
         android:layout_width="80dp"
         android:layout_height="40dp"
         android:layout_alignParentRight="true"
-        android:layout_marginRight="14dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="19dp"
+        android:layout_marginTop="43dp"
         android:text="@string/connect"
         android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/controllerPort"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/button1"
+        android:layout_alignBottom="@+id/button1"
+        android:layout_centerHorizontal="true"
+        android:text="@string/notSet"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/controllerIP"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/controllerPort"
+        android:layout_alignBottom="@+id/controllerPort"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="17dp"
+        android:text="@string/notSet"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textSize="13sp"
+        tools:ignore="RtlHardcoded,HardcodedText" />
+
+    <TextView
+        android:id="@+id/controllerLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/controllerIP"
+        android:layout_alignLeft="@+id/controllerIP"
+        android:layout_marginBottom="14dp"
+        android:text="@string/notSet"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#125FDB"
+        android:textStyle="normal" />
 
 </RelativeLayout>

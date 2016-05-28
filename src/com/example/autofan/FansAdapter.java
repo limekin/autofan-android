@@ -3,6 +3,9 @@ package com.example.autofan;
 import java.util.ArrayList;
 import java.util.Map;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import com.example.autofan.storage.Store;
 
 import android.content.Context;
@@ -18,11 +21,11 @@ import android.widget.TextView;
 // list of fans.
 public class FansAdapter extends BaseAdapter {
 
-	private ArrayList< Map<String, String> > fans;
+	private ArrayList<JSONObject> fans;
 	private Context context;
 	private LayoutInflater inflater;
 	
-	public FansAdapter(Context context, ArrayList< Map<String, String>> fans) {
+	public FansAdapter(Context context, ArrayList<JSONObject> fans) {
 		this.context = context;
 		this.fans = fans;
 		this.inflater = (LayoutInflater) context.getSystemService(
@@ -47,14 +50,20 @@ public class FansAdapter extends BaseAdapter {
 	@Override
 	public View getView(int index, View convertView, ViewGroup parent) {
 		View view = inflater.inflate(R.layout.single_fan, null);
+		TextView controllerLabel = (TextView) view.findViewById(R.id.controllerLabel);
 		TextView controllerIP  = (TextView) view.findViewById(R.id.controllerIP);
 		TextView controllerPort =(TextView) view.findViewById(R.id.controllerPort);
 		Button button = (Button) view.findViewById(R.id.button1);
 		this.addFanSelectListener(button, index);
 		
-		controllerIP.setText( this.fans.get(index).get("address") );
-		controllerPort.setText( this.fans.get(index).get("port") );
-		
+		try {
+			controllerLabel.setText( this.fans.get(index).getString("label"));
+			controllerIP.setText( this.fans.get(index).getString("address") );
+			controllerPort.setText( this.fans.get(index).getString("port") );
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	
 		return view;
 	}
 	
@@ -63,12 +72,16 @@ public class FansAdapter extends BaseAdapter {
 		button.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				String controllerAddress = "http://" + 
-						FansAdapter.this.fans.get(index_).get("address") + ":" + 
-						FansAdapter.this.fans.get(index_).get("port");
-				Store.put("saved_ip", controllerAddress, FansAdapter.this.context);
-				
-				((MainActivity) FansAdapter.this.context).connect();	
+				String controllerAddress;
+				try {
+					controllerAddress = "http://" + 
+							FansAdapter.this.fans.get(index_).getString("address") + ":" + 
+							FansAdapter.this.fans.get(index_).getString("port");
+					Store.put("saved_ip", controllerAddress, FansAdapter.this.context);
+					((MainActivity) FansAdapter.this.context).connect();
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
 			}
 		});
 	}

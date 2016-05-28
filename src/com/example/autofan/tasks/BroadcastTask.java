@@ -12,6 +12,10 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 import com.example.autofan.MainActivity;
@@ -27,18 +31,18 @@ import android.util.Log;
 // Used to broadcast upd messges to the hosts in the network.
 public class BroadcastTask extends AsyncTask<
 	String, 
-	ArrayList<Map<String, String>>, 
-	ArrayList<Map<String, String>>> {
+	ArrayList<JSONObject>, 
+	ArrayList<JSONObject>> {
 
 	private Context context;
-	private ArrayList<Map<String, String>> foundFans; 
+	private ArrayList<JSONObject> foundFans; 
 	public BroadcastTask(Context context) {
 		this.context = context;
-		this.foundFans = new ArrayList<Map<String, String>>();	
+		this.foundFans = new ArrayList<JSONObject>();	
 	}
 	
 	@Override
-	protected ArrayList<Map<String, String>> doInBackground(String... params) {
+	protected ArrayList<JSONObject> doInBackground(String... params) {
 		try {
 			return broadcast();
 		} catch (IOException e) {
@@ -48,14 +52,14 @@ public class BroadcastTask extends AsyncTask<
 	}
 	
 	@Override
-	protected void onPostExecute(ArrayList<Map<String, String>>  controllers) {
+	protected void onPostExecute(ArrayList<JSONObject>  controllers) {
 		((MainActivity) this.context).broadcastCallback( controllers);
 	}
 	
 	// Broadcasts UDP packets to all the hosts in every network interface.
-	private ArrayList<Map<String, String>> broadcast() throws IOException {
+	private ArrayList<JSONObject> broadcast() throws IOException {
 		// Wll contain all the found fans.
-		ArrayList<Map<String, String>> foundFans = new ArrayList<Map<String, String>>();
+		ArrayList<JSONObject> foundFans = new ArrayList<JSONObject>();
 		
 		// Get all the network interfaces of the system.
 		Enumeration< NetworkInterface > interfaces = 
@@ -83,13 +87,13 @@ public class BroadcastTask extends AsyncTask<
 						"Found broadcast address: " + broadcastAddress.getHostName()
 					);
 					try {
-						Map<String, String> controller =  
+						JSONObject controllerData =  
 							sendUDP(broadcastAddress);
 					
 						// If we got a valid controller then we found a controller,
 						// then add it to the found fans list.
-						if(controller != null) 
-							foundFans.add(controller);
+						if(controllerData != null) 
+							foundFans.add(controllerData);
 					} catch(SocketTimeoutException e) {
 						// Catched.
 					}
@@ -101,7 +105,7 @@ public class BroadcastTask extends AsyncTask<
 	}
 	
 	// Sends the udp packet to the given host for controller detection.
-	private Map<String, String> sendUDP(InetAddress remoteAddress) throws IOException {
+	private JSONObject sendUDP(InetAddress remoteAddress) throws IOException {
 		// Open a socket at random port.
 		DatagramSocket socket = new DatagramSocket();
 		
@@ -115,20 +119,37 @@ public class BroadcastTask extends AsyncTask<
 		// Send the packet.
 		socket.send(packet);
 		
-		// Now wait for response.
-		socket.setSoTimeout(2000);
+		// Create another packet that has large buffer size.
+		byte[] responsePayload = new byte[1024];
+		packet = new DatagramPacket(
+			responsePayload, responsePayload.length
+		);
+		socket.setSoTimeout(3000);
+		// Wait for the response.
 		socket.receive(packet);
 		
-		// Packet received, now get the port and address form it.
-		Map<String, String> controllerServer = new HashMap<String, String>();
-		controllerServer.put("address", packet.getAddress().getHostName());
-		controllerServer.put("port", (String) (new String(packet.getData()).subSequence(0, packet.getLength())));
+		// Packet received, now get the address and other details from it.
+		String address = packet.getAddress().getHostName();
+		String packetData = (String) (new String(packet.getData(), "UTF-8").
+				subSequence(0, packet.getLength()));
 		
-		// Log some.
-		Log.i("UDP", "Got address: " + controllerServer.get("address"));
-		Log.i("UDP", "Got port: " + controllerServer.get("port"));
-		Log.i("UDP", String.valueOf(packet.getLength()));
+		// Parse it into json.
+		JSONObject controllerData = null;
+		try {
+			controllerData = new JSONObject(packetData);
+			// Add the address to it.
+			controllerData.put("address", address);	
+			// Log some.
+			Log.i("UDP", controllerData.toString());
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 		
-		return controllerServer;
+		return controllerData;
+	}
+	
+	// Only selected the unique controllers.
+	private ArrayList<JSONObject> getUnique(ArrayList<JSONObject> controllers) {
+		return null;
 	}
 }
