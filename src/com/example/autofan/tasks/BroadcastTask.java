@@ -10,8 +10,10 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,10 +37,10 @@ public class BroadcastTask extends AsyncTask<
 	ArrayList<JSONObject>> {
 
 	private Context context;
-	private ArrayList<JSONObject> foundFans; 
+	private ArrayList<JSONObject> foundControllers; 
 	public BroadcastTask(Context context) {
 		this.context = context;
-		this.foundFans = new ArrayList<JSONObject>();	
+		this.foundControllers = new ArrayList<JSONObject>();	
 	}
 	
 	@Override
@@ -48,7 +50,7 @@ public class BroadcastTask extends AsyncTask<
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return this.foundFans;
+		return this.foundControllers;
 	}
 	
 	@Override
@@ -59,7 +61,7 @@ public class BroadcastTask extends AsyncTask<
 	// Broadcasts UDP packets to all the hosts in every network interface.
 	private ArrayList<JSONObject> broadcast() throws IOException {
 		// Wll contain all the found fans.
-		ArrayList<JSONObject> foundFans = new ArrayList<JSONObject>();
+		ArrayList<JSONObject> foundControllers = new ArrayList<JSONObject>();
 		
 		// Get all the network interfaces of the system.
 		Enumeration< NetworkInterface > interfaces = 
@@ -71,8 +73,7 @@ public class BroadcastTask extends AsyncTask<
 			singleInterf = interfaces.nextElement();
 			Log.i("UDP", "Found network interface : " + singleInterf.getName());
 			
-			InterfaceAddress address;
-			
+			InterfaceAddress address;		
 			// Get all the addresses assigned to the network.
 			List<InterfaceAddress> addresses = 
 					singleInterf.getInterfaceAddresses();
@@ -87,13 +88,11 @@ public class BroadcastTask extends AsyncTask<
 						"Found broadcast address: " + broadcastAddress.getHostName()
 					);
 					try {
-						JSONObject controllerData =  
-							sendUDP(broadcastAddress);
-					
-						// If we got a valid controller then we found a controller,
-						// then add it to the found fans list.
-						if(controllerData != null) 
-							foundFans.add(controllerData);
+						JSONObject controller =  
+							sendUDP(broadcastAddress);	
+						// If it's a valid controller and is unique, add it.
+						if(controller != null && this.isUnique(foundControllers, controller)) 
+							foundControllers.add(controller);
 					} catch(SocketTimeoutException e) {
 						// Catched.
 					}
@@ -101,7 +100,7 @@ public class BroadcastTask extends AsyncTask<
 			}
 		}
 		
-		return foundFans;
+		return foundControllers;
 	}
 	
 	// Sends the udp packet to the given host for controller detection.
@@ -148,8 +147,23 @@ public class BroadcastTask extends AsyncTask<
 		return controllerData;
 	}
 	
-	// Only selected the unique controllers.
-	private ArrayList<JSONObject> getUnique(ArrayList<JSONObject> controllers) {
-		return null;
+	// Checks if the given controller is
+	// in the given list of controllers.
+	private boolean isUnique(
+			ArrayList<JSONObject> controllers, 
+			JSONObject controller) {
+		for(int i=0; i<controllers.size(); ++i ) {
+			JSONObject savedController = controllers.get(i);
+			
+			// If the controller ids match, its already saved.
+			try {
+				if(savedController.getString("id").equals(controller.getString("id")))
+					return false;
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return true;
 	}
 }
