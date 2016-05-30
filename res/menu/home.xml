@@ -8,5 +8,12 @@
         android:orderInCategory="100"
         android:title="@string/action_settings"
         app:showAsAction="never"/>
+    
+     <item
+        android:id="@+id/disconnect"
+        android:orderInCategory="100"
+        android:title="Disconnect"
+        android:icon="@drawable/disconnect"
+        app:showAsAction="ifRoom"/>
 
 </menu>
